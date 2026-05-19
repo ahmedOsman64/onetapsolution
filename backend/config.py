@@ -46,11 +46,18 @@ class ProductionConfig(Config):
     
     # In production, ensure secure settings
     def __init__(self):
-        # Prevent default dev keys in production
-        if Config.SECRET_KEY == 'dev-secret-key':
-            raise ValueError("SECRET_KEY must be configured in production!")
-        if Config.JWT_SECRET_KEY == 'jwt-dev-secret-key':
-            raise ValueError("JWT_SECRET_KEY must be configured in production!")
+        # Prevent default dev keys in production and fail fast if missing
+        try:
+            self.SECRET_KEY = os.environ['SECRET_KEY']
+            self.JWT_SECRET_KEY = os.environ['JWT_SECRET_KEY']
+            self.DB_PASSWORD = os.environ['DB_PASSWORD']
+        except KeyError as e:
+            raise ValueError(f"Missing essential environment variable in production: {e}")
+            
+        if self.SECRET_KEY == 'dev-secret-key':
+            raise ValueError("SECRET_KEY must be configured securely in production!")
+        if self.JWT_SECRET_KEY == 'jwt-dev-secret-key':
+            raise ValueError("JWT_SECRET_KEY must be configured securely in production!")
         if Config.DB_USER == 'root':
             raise ValueError("Do not use 'root' database user in production! Use a dedicated least-privilege user.")
 

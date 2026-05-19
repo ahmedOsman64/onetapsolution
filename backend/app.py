@@ -11,8 +11,9 @@ from config import config
 # Import database and migrate
 from database.db import db, migrate
 
-# Import Error Handlers
+# Import Error Handlers & Middleware
 from middleware.error_handler import register_error_handlers
+from middleware.rate_limiter import limiter
 
 # Import Blueprints
 from routes.auth_routes import auth_bp
@@ -28,6 +29,7 @@ from routes.stats_routes import stats_bp
 from routes.setting_routes import setting_bp
 from models.visit_model import Visit
 from models.setting_model import Setting
+from models.token_blocklist import TokenBlocklist
 
 
 def create_app(config_name='default'):
@@ -59,12 +61,21 @@ def create_app(config_name='default'):
     db.init_app(app)
     migrate.init_app(app, db)
     
+    # Initialize global Rate Limiter
+    limiter.init_app(app)
+    
     # Auto-create tables (e.g. visits)
     with app.app_context():
         db.create_all()
     
     # Initialize JWT
     jwt = JWTManager(app)
+    
+    @jwt.token_in_blocklist_loader
+    def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
+        jti = jwt_payload["jti"]
+        token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+        return token is not None
     
     # Create uploads directory if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)

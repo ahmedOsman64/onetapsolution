@@ -1,9 +1,10 @@
 from flask import request
-from flask_jwt_extended import create_access_token, get_jwt_identity
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, get_jwt, jwt_required
 from datetime import datetime, timezone
 
 from database.db import db
 from models.user_model import User
+from models.token_blocklist import TokenBlocklist
 from utils.security import check_password
 from utils.responses import success_response, error_response
 from utils.validators import require_fields, is_valid_email, is_valid_password
@@ -78,13 +79,32 @@ def login():
     
     logger.info(f"Successful admin login for {email} from IP {ip}")
 
-    # Create JWT token
+    # Create JWT tokens
     access_token = create_access_token(identity=str(user.id))
+    refresh_token = create_refresh_token(identity=str(user.id))
 
     return success_response({
         'token': access_token,
+        'refresh_token': refresh_token,
         'user':  user.to_dict()
     }, "Login successful")
+
+@jwt_required(refresh=True)
+def refresh():
+    """Refresh the access token."""
+    identity = get_jwt_identity()
+    access_token = create_access_token(identity=identity)
+    return success_response({'token': access_token}, "Token refreshed")
+
+@jwt_required()
+def logout():
+    """Revoke the current access token."""
+    jti = get_jwt()["jti"]
+    now = datetime.now(timezone.utc)
+    db.session.add(TokenBlocklist(jti=jti, created_at=now))
+    db.session.commit()
+    logger.info(f"User {get_jwt_identity()} logged out successfully")
+    return success_response(None, "Successfully logged out")
 
 
 def get_current_user():
