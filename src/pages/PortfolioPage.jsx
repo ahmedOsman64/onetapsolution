@@ -124,9 +124,9 @@ const PortfolioPage = () => {
                     <span className="text-[#04C244] text-xs font-semibold uppercase tracking-widest mb-1 text-shadow-sm">{project.category}</span>
                     <h3 className="text-xl font-bold text-white mb-2 text-shadow-md">{project.title}</h3>
                     <p className="text-slate-300 text-sm mb-4 text-shadow-sm">{project.desc}</p>
-                    <button className="w-fit flex items-center gap-2 text-sm text-[#04C244] font-medium hover:gap-3 transition-all keep-white">
+                    <a href={project.url} target="_blank" rel="noopener noreferrer" className="w-fit flex items-center gap-2 text-sm text-[#04C244] font-medium hover:gap-3 transition-all keep-white">
                       View Project <ExternalLink size={15} />
-                    </button>
+                    </a>
                   </div>
                   {/* Always-visible card footer */}
                   <div className="p-3 sm:p-5 border-t border-slate-100 dark:border-white/5 transition-colors">
