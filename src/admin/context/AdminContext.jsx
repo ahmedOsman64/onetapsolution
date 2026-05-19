@@ -11,7 +11,7 @@ const defaultData = {
         projects: 0,
         clients: 20,
         services: 0,
-        satisfaction: 99
+        satisfaction: 3
     },
     users: [],
     projects: [],
@@ -151,7 +151,7 @@ export const AdminProvider = ({ children }) => {
                             projects: p.length,
                             clients: 20,
                             services: s.length,
-                            satisfaction: 99
+                            satisfaction: 3
                         }
                     };
                 });

@@ -12,11 +12,28 @@ const AdminSettings = () => {
     const [activeTab, setActiveTab] = useState('general');
     const [isSaving, setIsSaving] = useState(false);
 
+    const calculateYearsOfExperience = () => {
+        const startDate = new Date(2025, 3); // April 2025 (Month is 0-indexed: 3 is April)
+        const today = new Date();
+        let years = today.getFullYear() - startDate.getFullYear();
+        const m = today.getMonth() - startDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < startDate.getDate())) {
+            years--;
+        }
+        return Math.max(1, years);
+    };
+
     // Persisted General Settings States (Website Name is read-only from code)
     const [siteName] = useState('OneTap Solution');
     const [companyEmail, setCompanyEmail] = useState('info@onetapsolution.com');
     const [contactPhone, setContactPhone] = useState('+252 61 9586339');
     const [officeLocation, setOfficeLocation] = useState('Mogadishu, Somalia');
+
+    // Public Stats Settings States
+    const [projectsDone, setProjectsDone] = useState(1);
+    const [trustedPartners, setTrustedPartners] = useState(20);
+    const [servicesProvided, setServicesProvided] = useState(2);
+    const [satisfactionRate, setSatisfactionRate] = useState(3);
 
     // Fetch site settings from MySQL database on mount
     useEffect(() => {
@@ -28,6 +45,10 @@ const AdminSettings = () => {
                     setCompanyEmail(result.data.company_email);
                     setContactPhone(result.data.contact_phone);
                     setOfficeLocation(result.data.office_location);
+                    setProjectsDone(result.data.projects_done ?? 1);
+                    setTrustedPartners(result.data.trusted_partners ?? 20);
+                    setServicesProvided(result.data.services_provided ?? 7);
+                    setSatisfactionRate(result.data.satisfaction_rate ?? 99);
                 }
             } catch (err) {
                 console.error("Failed to fetch settings from database:", err);
@@ -37,11 +58,41 @@ const AdminSettings = () => {
     }, []);
 
     // Security / Password Update States
+    const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [passwordSuccess, setPasswordSuccess] = useState('');
     const [passwordLoading, setPasswordLoading] = useState(false);
+
+    // Theme State
+    const [theme, setTheme] = useState(() => {
+        return localStorage.getItem('ots-theme') || 'system';
+    });
+
+    const handleThemeChange = (newTheme) => {
+        setTheme(newTheme);
+        localStorage.setItem('ots-theme', newTheme);
+        
+        const root = document.documentElement;
+        if (newTheme === 'light') {
+            root.classList.remove('dark');
+            root.classList.add('light');
+        } else if (newTheme === 'dark') {
+            root.classList.remove('light');
+            root.classList.add('dark');
+        } else {
+            // System
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (systemPrefersDark) {
+                root.classList.remove('light');
+                root.classList.add('dark');
+            } else {
+                root.classList.remove('dark');
+                root.classList.add('light');
+            }
+        }
+    };
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -55,7 +106,11 @@ const AdminSettings = () => {
                 body: JSON.stringify({
                     company_email: companyEmail,
                     contact_phone: contactPhone,
-                    office_location: officeLocation
+                    office_location: officeLocation,
+                    projects_done: Number(projectsDone),
+                    trusted_partners: Number(trustedPartners),
+                    services_provided: Number(servicesProvided),
+                    satisfaction_rate: Number(satisfactionRate)
                 })
             });
             const result = await res.json();
@@ -78,7 +133,7 @@ const AdminSettings = () => {
         setPasswordError('');
         setPasswordSuccess('');
 
-        if (!newPassword || !confirmPassword) {
+        if (!oldPassword || !newPassword || !confirmPassword) {
             setPasswordError('Please fill out all password fields.');
             return;
         }
@@ -93,11 +148,17 @@ const AdminSettings = () => {
             return;
         }
 
+        if (oldPassword === newPassword) {
+            setPasswordError('New password must be different from your current password.');
+            return;
+        }
+
         setPasswordLoading(true);
         try {
-            const res = await updateCollection('users', { password: newPassword }, user.id);
+            const res = await updateCollection('users', { old_password: oldPassword, password: newPassword }, user.id);
             if (res.success) {
-                setPasswordSuccess('Password updated successfully in database!');
+                setPasswordSuccess('Password updated successfully!');
+                setOldPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
             } else {
@@ -135,7 +196,6 @@ const AdminSettings = () => {
                         { id: 'security', label: 'Security', icon: <Shield size={18} /> },
                         { id: 'notifications', label: 'Notifications', icon: <Bell size={18} /> },
                         { id: 'appearance', label: 'Appearance', icon: <Smartphone size={18} /> },
-                        { id: 'backup', label: 'Backup & Data', icon: <Database size={18} /> },
                     ].map(tab => (
                         <button 
                             key={tab.id}
@@ -212,6 +272,55 @@ const AdminSettings = () => {
                             </section>
 
                             <section className="pt-8 border-t border-black/10 dark:border-white/5">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                                    <Database className="text-[#04C244]" size={20} />
+                                    Public Statistics
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Projects Done (+)</label>
+                                        <input 
+                                            type="number" 
+                                            value={projectsDone} 
+                                            onChange={(e) => setProjectsDone(e.target.value)} 
+                                            className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl py-3 px-4 text-slate-900 dark:text-white focus:outline-none focus:border-[#04C244]/30 transition-all text-sm" 
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Trusted Partners (+)</label>
+                                        <input 
+                                            type="number" 
+                                            value={trustedPartners} 
+                                            onChange={(e) => setTrustedPartners(e.target.value)} 
+                                            className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl py-3 px-4 text-slate-900 dark:text-white focus:outline-none focus:border-[#04C244]/30 transition-all text-sm" 
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Regions Served (+)</label>
+                                        <input 
+                                            type="number" 
+                                            value={servicesProvided} 
+                                            onChange={(e) => setServicesProvided(e.target.value)} 
+                                            className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl py-3 px-4 text-slate-900 dark:text-white focus:outline-none focus:border-[#04C244]/30 transition-all text-sm" 
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between items-center mr-1">
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Years Experience (+)</label>
+                                            <span className="text-[9px] bg-[#04C244]/10 text-[#04C244] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider border border-[#04C244]/20">Automatic (Apr 2025)</span>
+                                        </div>
+                                        <input 
+                                            type="number" 
+                                            value={calculateYearsOfExperience()} 
+                                            readOnly
+                                            className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl py-3 px-4 text-slate-400 dark:text-slate-500 focus:outline-none cursor-not-allowed text-sm" 
+                                            title="Years of experience is automatically calculated starting from April 2025."
+                                        />
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="pt-8 border-t border-[#04C244]/10 dark:border-white/5">
                                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Contact Channels</h3>
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between p-4 bg-white/1 border border-black/10 dark:border-white/5 rounded-2xl">
@@ -242,15 +351,29 @@ const AdminSettings = () => {
                                 </h3>
                                 <form onSubmit={handleUpdatePassword} className="max-w-md space-y-6">
                                     {passwordError && (
-                                        <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold rounded-2xl">
-                                            {passwordError}
+                                        <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold rounded-2xl flex items-start gap-2">
+                                            <span className="mt-0.5">⚠</span>
+                                            <span>{passwordError}</span>
                                         </div>
                                     )}
                                     {passwordSuccess && (
-                                        <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold rounded-2xl">
-                                            {passwordSuccess}
+                                        <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-bold rounded-2xl flex items-start gap-2">
+                                            <span className="mt-0.5">✓</span>
+                                            <span>{passwordSuccess}</span>
                                         </div>
                                     )}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Current Password</label>
+                                        <input 
+                                            type="password" 
+                                            required
+                                            value={oldPassword}
+                                            onChange={(e) => setOldPassword(e.target.value)}
+                                            placeholder="Enter your current password" 
+                                            className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl py-3 px-4 text-slate-900 dark:text-white focus:outline-none focus:border-[#04C244]/30 transition-all text-sm" 
+                                        />
+                                    </div>
+                                    <div className="h-px bg-black/10 dark:bg-white/5" />
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">New Password</label>
                                         <input 
@@ -269,7 +392,7 @@ const AdminSettings = () => {
                                             required
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
-                                            placeholder="Confirm password" 
+                                            placeholder="Confirm new password" 
                                             className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl py-3 px-4 text-slate-900 dark:text-white focus:outline-none focus:border-[#04C244]/30 transition-all text-sm" 
                                         />
                                     </div>
@@ -284,6 +407,85 @@ const AdminSettings = () => {
                             </section>
                         </motion.div>
                     )}
+
+                    {activeTab === 'notifications' && (
+                        <motion.div 
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="bg-white dark:bg-[#0A0C10] border border-black/10 dark:border-white/5 rounded-2xl sm:rounded-[40px] p-4 sm:p-10 space-y-8"
+                        >
+                            <section>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                                    <Bell className="text-[#04C244]" size={20} />
+                                    Notification Preferences
+                                </h3>
+                                <div className="space-y-4 max-w-2xl">
+                                    <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 rounded-2xl border border-black/10 dark:border-white/10">
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-900 dark:text-white">Email Notifications</p>
+                                            <p className="text-xs text-slate-500 mt-1">Receive an email when a new contact message is received</p>
+                                        </div>
+                                        <button className="w-12 h-6 rounded-full bg-[#04C244] relative transition-colors cursor-not-allowed opacity-80" title="Coming soon">
+                                            <div className="w-4 h-4 rounded-full bg-white absolute top-1 right-1 shadow-sm"></div>
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 rounded-2xl border border-black/10 dark:border-white/10">
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-900 dark:text-white">Security Alerts</p>
+                                            <p className="text-xs text-slate-500 mt-1">Get notified about new logins and password changes</p>
+                                        </div>
+                                        <button className="w-12 h-6 rounded-full bg-[#04C244] relative transition-colors cursor-not-allowed opacity-80" title="Coming soon">
+                                            <div className="w-4 h-4 rounded-full bg-white absolute top-1 right-1 shadow-sm"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </section>
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'appearance' && (
+                        <motion.div 
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="bg-white dark:bg-[#0A0C10] border border-black/10 dark:border-white/5 rounded-2xl sm:rounded-[40px] p-4 sm:p-10 space-y-8"
+                        >
+                            <section>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                                    <Smartphone className="text-[#04C244]" size={20} />
+                                    Appearance Settings
+                                </h3>
+                                <div className="space-y-6 max-w-2xl">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Theme (Preview)</label>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                            <button 
+                                                onClick={() => handleThemeChange('light')}
+                                                className={`p-4 border-2 ${theme === 'light' ? 'border-[#04C244] bg-black/5 dark:bg-white/5' : 'border-transparent hover:border-black/10 dark:hover:border-white/10 bg-black/5 dark:bg-white/5'} rounded-2xl text-center transition-all`}
+                                            >
+                                                <div className="w-full h-16 bg-slate-100 rounded-lg mb-2 border border-black/5"></div>
+                                                <span className="text-xs font-bold text-slate-900 dark:text-white">Light</span>
+                                            </button>
+                                            <button 
+                                                onClick={() => handleThemeChange('dark')}
+                                                className={`p-4 border-2 ${theme === 'dark' ? 'border-[#04C244] bg-black/5 dark:bg-white/5' : 'border-transparent hover:border-black/10 dark:hover:border-white/10 bg-black/5 dark:bg-white/5'} rounded-2xl text-center transition-all`}
+                                            >
+                                                <div className="w-full h-16 bg-[#0A0C10] rounded-lg mb-2 border border-white/5"></div>
+                                                <span className="text-xs font-bold text-slate-900 dark:text-white">Dark</span>
+                                            </button>
+                                            <button 
+                                                onClick={() => handleThemeChange('system')}
+                                                className={`p-4 border-2 ${theme === 'system' ? 'border-[#04C244] bg-black/5 dark:bg-white/5' : 'border-transparent hover:border-black/10 dark:hover:border-white/10 bg-black/5 dark:bg-white/5'} rounded-2xl text-center transition-all`}
+                                            >
+                                                <div className="w-full h-16 bg-gradient-to-r from-slate-100 to-[#0A0C10] rounded-lg mb-2 border border-black/5"></div>
+                                                <span className="text-xs font-bold text-slate-900 dark:text-white">System</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </motion.div>
+                    )}
+
                 </div>
             </div>
         </div>

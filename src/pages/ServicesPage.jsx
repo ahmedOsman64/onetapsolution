@@ -5,23 +5,24 @@ import { Link } from 'react-router-dom';
 import { getServices } from '../services/api';
 
 const iconMap = {
-  'fas fa-laptop-code': <MonitorPlay size={32} />,
-  'fas fa-mobile-alt': <Smartphone size={32} />,
-  'fas fa-cogs': <GitPullRequest size={32} />,
-  'fas fa-palette': <Palette size={32} />,
-  'fas fa-film': <MonitorPlay size={32} />,
-  'fas fa-bullhorn': <Megaphone size={32} />,
+  'fas fa-laptop-code': <MonitorPlay size={24} />,
+  'fas fa-mobile-alt': <Smartphone size={24} />,
+  'fas fa-cogs': <GitPullRequest size={24} />,
+  'fas fa-palette': <Palette size={24} />,
+  'fas fa-film': <MonitorPlay size={24} />,
+  'fas fa-bullhorn': <Megaphone size={24} />,
 };
 
 const renderIcon = (icon) => {
   if (typeof icon === 'string' && icon.startsWith('fas ')) {
-    return <i className={`${icon} text-3xl`}></i>;
+    return <i className={`${icon} text-2xl`}></i>;
   }
-  return iconMap[icon] || <Code size={32} />;
+  return iconMap[icon] || <Code size={24} />;
 };
 
 const ServicesPage = () => {
   const [servicesList, setServicesList] = useState([]);
+  const [activeStepIndex, setActiveStepIndex] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -34,6 +35,17 @@ const ServicesPage = () => {
     fetchServices();
     return () => { mounted = false; };
   }, []);
+
+  const handleStepScroll = (e) => {
+    const container = e.target;
+    const scrollPosition = container.scrollLeft;
+    const cardWidth = container.scrollWidth / 4;
+    const index = Math.round(scrollPosition / cardWidth);
+    if (index >= 0 && index < 4) {
+      setActiveStepIndex(index);
+    }
+  };
+
   const fadeUp = {
     initial: { opacity: 0, y: 30 },
     whileInView: { opacity: 1, y: 0 },
@@ -45,7 +57,7 @@ const ServicesPage = () => {
     <div className="min-h-screen">
 
       {/* ── Hero Banner ── */}
-      <section className="page-hero relative flex items-center justify-center text-center overflow-hidden" style={{ minHeight: '360px' }}>
+      <section className="page-hero relative flex items-center justify-center text-center overflow-hidden" style={{ minHeight: '380px' }}>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#0d4a1f_0%,#000000_70%)] hero-bg-overlay"></div>
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#04C24415_0%,transparent_60%)] hero-bg-overlay"></div>
         <div className="relative z-10 px-6 py-28">
@@ -71,32 +83,32 @@ const ServicesPage = () => {
       {/* ── Services Grid ── */}
       <section className="py-24">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
             {servicesList.map((service, i) => (
               <motion.div
                 key={i}
                 {...fadeUp}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="glass-card p-8 group hover:border-[#04C244]/40 transition-colors border border-white/10"
+                className="glass-card p-5 sm:p-8 group hover:border-[#04C244]/40 transition-colors border border-white/10"
               >
-                <div className="w-14 h-14 rounded-2xl bg-[#04C244]/10 flex items-center justify-center text-[#04C244] mb-6 group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-[#04C244]/10 flex items-center justify-center text-[#04C244] mb-4 sm:mb-6 group-hover:scale-110 transition-transform">
                   {renderIcon(service.icon)}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#04C244] transition-colors">
+                <h3 className="text-base sm:text-xl font-bold text-white mb-2 sm:mb-3 group-hover:text-[#04C244] transition-colors truncate">
                   {service.name || service.title}
                 </h3>
-                <p className="text-slate-400 text-sm leading-relaxed mb-6">{service.desc}</p>
-                <ul className="space-y-2">
+                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed mb-4 sm:mb-6 line-clamp-3">{service.desc}</p>
+                <ul className="space-y-1.5 sm:space-y-2">
                   {(service.features || []).map((f, fi) => (
-                    <li key={fi} className="flex items-center gap-2 text-sm text-slate-400">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#04C244]"></span>
+                    <li key={fi} className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-400 truncate">
+                      <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#04C244] shrink-0"></span>
                       {f}
                     </li>
                   ))}
                   {(!service.features || service.features.length === 0) && (
-                    <li className="flex items-center gap-2 text-sm text-slate-400 italic">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#04C244]"></span>
-                      Professional {service.name} services.
+                    <li className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-slate-400 italic truncate">
+                      <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#04C244] shrink-0"></span>
+                      Professional services.
                     </li>
                   )}
                 </ul>
@@ -113,7 +125,9 @@ const ServicesPage = () => {
             <h2 className="text-4xl font-bold text-white mb-4">How We <span className="text-[#04C244]">Work</span></h2>
             <p className="text-slate-400 max-w-xl mx-auto">Our proven process ensures every project is delivered on time, on budget, and beyond expectations.</p>
           </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          
+          {/* Desktop Container */}
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               { step: '01', title: 'Discovery', desc: 'We learn about your business, goals, and requirements.' },
               { step: '02', title: 'Design', desc: 'We create wireframes and prototypes for your approval.' },
@@ -128,6 +142,54 @@ const ServicesPage = () => {
                 <p className="text-slate-400 text-sm">{step.desc}</p>
               </motion.div>
             ))}
+          </div>
+
+          {/* Mobile Swipeable Steps Slider */}
+          <div className="md:hidden relative w-full overflow-hidden">
+            <div 
+              id="steps-slider"
+              onScroll={handleStepScroll}
+              className="flex overflow-x-auto snap-x snap-mandatory gap-4 px-[15vw] scrollbar-none py-4 w-full"
+              style={{ scrollBehavior: 'smooth' }}
+            >
+              {[
+                { step: '01', title: 'Discovery', desc: 'We learn about your business, goals, and requirements.' },
+                { step: '02', title: 'Design', desc: 'We create wireframes and prototypes for your approval.' },
+                { step: '03', title: 'Build', desc: 'Our team develops the solution with clean, robust code.' },
+                { step: '04', title: 'Launch', desc: 'We deploy, test, and support your product after launch.' },
+              ].map((step, i) => (
+                <div 
+                  key={i} 
+                  className="snap-center shrink-0 w-[70vw] max-w-[280px] glass-card p-6 flex flex-col items-center text-center border border-white/5"
+                >
+                  <div className="w-14 h-14 rounded-full border-2 border-[#04C244]/40 flex items-center justify-center text-[#04C244] font-bold text-lg mb-4 bg-[#04C244]/5">
+                    {step.step}
+                  </div>
+                  <h4 className="text-white font-semibold text-base mb-2">{step.title}</h4>
+                  <p className="text-slate-400 text-xs leading-relaxed max-w-[200px]">{step.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Dots Indicator */}
+            <div className="flex justify-center gap-1.5 mt-4">
+              {[0, 1, 2, 3].map((idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    const container = document.getElementById('steps-slider');
+                    if (container) {
+                      const cardWidth = container.scrollWidth / 4;
+                      container.scrollTo({ left: idx * cardWidth, behavior: 'smooth' });
+                    }
+                  }}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    activeStepIndex === idx ? 'w-6 bg-[#04C244]' : 'w-1.5 bg-slate-600/50'
+                  }`}
+                  aria-label={`Go to step ${idx + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>

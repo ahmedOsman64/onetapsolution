@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const About = () => {
   return (
-    <section className="py-24 bg-white dark:bg-black/50 transition-colors duration-300">
+    <section className="py-12 md:py-24 bg-white dark:bg-black/50 transition-colors duration-300">
       <div className="container mx-auto px-6">
         <div className="flex flex-col lg:flex-row items-center gap-16">
           

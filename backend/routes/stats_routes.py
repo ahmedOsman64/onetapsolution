@@ -42,6 +42,28 @@ def get_visitor_count():
     except Exception as e:
         return error_response(f"Error getting visitor count: {str(e)}", 500)
 
+@stats_bp.route('/public', methods=['GET'])
+def get_public_stats():
+    from models.setting_model import Setting
+    try:
+        settings = Setting.query.first()
+        if not settings:
+            return success_response({
+                "projects": 1,
+                "clients": 20,
+                "services": 7,
+                "satisfaction": 99
+            }, "Public stats retrieved successfully")
+        
+        return success_response({
+            "projects": settings.projects_done,
+            "clients": settings.trusted_partners,
+            "services": settings.services_provided,
+            "satisfaction": settings.satisfaction_rate
+        }, "Public stats retrieved successfully")
+    except Exception as e:
+        return error_response(f"Error getting public stats: {str(e)}", 500)
+
 @stats_bp.route('/dashboard', methods=['GET'])
 def get_dashboard_stats():
     from models.user_model import User

@@ -83,18 +83,18 @@ const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.8 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-row items-center justify-center gap-3 sm:gap-4"
           >
             <Link 
               to="/services" 
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-brand text-white font-medium hover:shadow-lg hover:shadow-[#04C244]/25 transition-all flex items-center justify-center gap-2 group"
+              className="px-5 py-3.5 sm:px-8 sm:py-4 rounded-xl bg-gradient-brand text-white font-medium hover:shadow-lg hover:shadow-[#04C244]/25 transition-all flex items-center justify-center gap-2 group text-sm sm:text-base"
             >
               Explore Services
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link 
               to="/portfolio" 
-              className="w-full sm:w-auto px-8 py-4 rounded-xl glass-card text-slate-900 dark:text-white font-medium hover:bg-black/5 dark:hover:bg-white/10 transition-all flex items-center justify-center"
+              className="px-5 py-3.5 sm:px-8 sm:py-4 rounded-xl glass-card text-slate-900 dark:text-white font-medium hover:bg-black/5 dark:hover:bg-white/10 transition-all flex items-center justify-center text-sm sm:text-base"
             >
               View Projects
             </Link>

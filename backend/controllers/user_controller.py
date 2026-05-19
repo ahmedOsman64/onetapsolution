@@ -3,7 +3,7 @@ from database.db import db
 from models.user_model import User, Role
 from utils.responses import success_response, error_response
 from utils.validators import require_fields
-from utils.security import hash_password
+from utils.security import hash_password, check_password
 
 ROLE_MAPPING = {
     'superadmin': 1,
@@ -82,6 +82,12 @@ def update_user(user_id):
             user.email = email
             
     if 'password' in data and data['password']:
+        # Require old password to be provided and correct
+        old_password = data.get('old_password', '')
+        if not old_password:
+            return error_response("Current password is required to set a new password.", 400)
+        if not check_password(old_password, user.password_hash):
+            return error_response("Current password is incorrect.", 401)
         user.password_hash = hash_password(data['password'])
         
     if 'role' in data:

@@ -39,7 +39,7 @@ const Testimonials = () => {
   if (!testimonialsList.length) return null;
 
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section className="py-12 md:py-24 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-1/2 h-full bg-linear-to-l from-[#04C244]/10 to-transparent pointer-events-none"></div>
       
       <div className="container mx-auto px-6 relative z-10">
@@ -57,7 +57,7 @@ const Testimonials = () => {
 
         <div className="max-w-4xl mx-auto relative group">
           <div 
-            className="relative min-h-[420px] sm:min-h-[340px] md:h-[300px]"
+            className="relative min-h-[260px] sm:min-h-[220px] flex flex-col"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >

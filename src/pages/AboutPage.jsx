@@ -2,24 +2,17 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Target, Eye, Users, Award, Zap, Globe, ShieldCheck, TrendingUp } from 'lucide-react';
-import { getTeam, getStats } from '../services/api';
+import { getTeam } from '../services/api';
 
 const AboutPage = () => {
-  const [stats, setStats] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
 
   useEffect(() => {
     let mounted = true;
     const fetchData = async () => {
-      const [teamData, statsData] = await Promise.all([getTeam(), getStats()]);
+      const teamData = await getTeam();
       if (mounted) {
         setTeamMembers(teamData);
-        setStats([
-          { number: statsData.projects + '+', label: 'Projects Delivered' },
-          { number: '3+', label: 'Years Experience' },
-          { number: statsData.clients + '+', label: 'Happy Clients' },
-          { number: '10+', label: 'Team Members' },
-        ]);
       }
     };
     fetchData();
@@ -27,12 +20,12 @@ const AboutPage = () => {
   }, []);
 
   const values = [
-    { icon: <Zap size={28} />, title: 'Innovation', desc: 'We embrace the latest technologies to deliver cutting-edge digital solutions.' },
-    { icon: <ShieldCheck size={28} />, title: 'Integrity', desc: 'We build trust through transparency, honesty, and responsible delivery.' },
-    { icon: <Users size={28} />, title: 'Collaboration', desc: 'We work closely with our clients as true partners in their digital journey.' },
-    { icon: <TrendingUp size={28} />, title: 'Excellence', desc: 'We hold ourselves to the highest standards in every project we undertake.' },
-    { icon: <Globe size={28} />, title: 'Impact', desc: 'We build solutions that create measurable change for businesses and communities.' },
-    { icon: <Award size={28} />, title: 'Quality', desc: 'Every line of code, every pixel, is crafted with precision and care.' },
+    { icon: <Zap size={22} />, title: 'Innovation', desc: 'We embrace the latest technologies to deliver cutting-edge digital solutions.' },
+    { icon: <ShieldCheck size={22} />, title: 'Integrity', desc: 'We build trust through transparency, honesty, and responsible delivery.' },
+    { icon: <Users size={22} />, title: 'Collaboration', desc: 'We work closely with our clients as true partners in their digital journey.' },
+    { icon: <TrendingUp size={22} />, title: 'Excellence', desc: 'We hold ourselves to the highest standards in every project we undertake.' },
+    { icon: <Globe size={22} />, title: 'Impact', desc: 'We build solutions that create measurable change for businesses and communities.' },
+    { icon: <Award size={22} />, title: 'Quality', desc: 'Every line of code, every pixel, is crafted with precision and care.' },
   ];
 
   const fadeUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true }, transition: { duration: 0.6 } };
@@ -104,19 +97,6 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* ── Stats ── */}
-      <section className="py-16 border-y border-white/5 bg-white/2">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {stats.map((s, i) => (
-              <motion.div key={i} {...fadeUp} transition={{ duration: 0.5, delay: i * 0.1 }}>
-                <div className="text-4xl md:text-5xl font-bold text-[#04C244] mb-2">{s.number}</div>
-                <div className="text-slate-400 text-sm">{s.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ── Mission & Vision ── */}
       <section className="py-24">
@@ -152,14 +132,14 @@ const AboutPage = () => {
             <h2 className="text-4xl font-bold text-white mb-4">Our Core <span className="text-[#04C244]">Values</span></h2>
             <p className="text-slate-400 max-w-2xl mx-auto">The principles that guide everything we build, every partnership we form, and every decision we make.</p>
           </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {values.map((v, i) => (
-              <motion.div key={i} {...fadeUp} transition={{ duration: 0.5, delay: i * 0.1 }} className="glass-card p-8 hover:border-[#04C244]/30 transition-colors group">
-                <div className="w-12 h-12 rounded-xl bg-[#04C244]/10 flex items-center justify-center text-[#04C244] mb-5 group-hover:scale-110 transition-transform">
+              <motion.div key={i} {...fadeUp} transition={{ duration: 0.5, delay: i * 0.1 }} className="glass-card p-5 sm:p-8 hover:border-[#04C244]/30 transition-colors group">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#04C244]/10 flex items-center justify-center text-[#04C244] mb-4 sm:mb-5 group-hover:scale-110 transition-transform">
                   {v.icon}
                 </div>
-                <h4 className="text-white font-semibold text-lg mb-2">{v.title}</h4>
-                <p className="text-slate-400 text-sm leading-relaxed">{v.desc}</p>
+                <h4 className="text-white font-semibold text-sm sm:text-lg mb-1.5 sm:mb-2">{v.title}</h4>
+                <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">{v.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -173,10 +153,10 @@ const AboutPage = () => {
             <h2 className="text-4xl font-bold text-white mb-4">Meet the <span className="text-[#04C244]">Team</span></h2>
             <p className="text-slate-400 max-w-xl mx-auto">A passionate group of innovators, designers, and engineers working together to shape Somalia's digital future.</p>
           </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 max-w-4xl mx-auto">
             {teamMembers.map((member, i) => (
-              <motion.div key={i} {...fadeUp} transition={{ duration: 0.5, delay: i * 0.15 }} className="glass-card overflow-hidden text-center group">
-                <div className="relative overflow-hidden h-56 flex items-center justify-center bg-linear-to-br from-[#0A0C10] via-slate-900 to-black select-none border-b border-white/5">
+              <motion.div key={i} {...fadeUp} transition={{ duration: 0.5, delay: i * 0.15 }} className="glass-card overflow-hidden text-center group flex flex-col items-center p-4 sm:p-0">
+                <div className="relative overflow-hidden w-20 h-20 sm:w-full sm:h-56 rounded-full sm:rounded-none flex items-center justify-center bg-linear-to-br from-[#0A0C10] via-slate-900 to-black select-none sm:border-b border-white/5 shrink-0">
                   {(member.image || member.img) ? (
                     <img
                       src={member.image || member.img}
@@ -186,16 +166,16 @@ const AboutPage = () => {
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-[#0A0C10] via-slate-900 to-black select-none relative">
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(4,194,68,0.15)_0%,transparent_70%)]"></div>
-                      <span className="text-6xl font-black text-[#04C244]/80 tracking-widest font-mono transform group-hover:scale-110 group-hover:text-[#04C244] transition-all duration-500 drop-shadow-[0_0_15px_rgba(4,194,68,0.3)]">
+                      <span className="text-3xl sm:text-6xl font-black text-[#04C244]/80 tracking-widest font-mono transform group-hover:scale-110 group-hover:text-[#04C244] transition-all duration-500 drop-shadow-[0_0_15px_rgba(4,194,68,0.3)]">
                         {member.name ? member.name.charAt(0).toUpperCase() : '?'}
                       </span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent hidden sm:block"></div>
                 </div>
-                <div className="p-6">
-                  <h4 className="text-white font-bold text-lg">{member.name}</h4>
-                  <p className="text-[#04C244] text-sm mt-1">{member.role}</p>
+                <div className="p-3 sm:p-6 text-center w-full">
+                  <h4 className="text-white font-bold text-sm sm:text-lg truncate">{member.name}</h4>
+                  <p className="text-[#04C244] text-xs sm:text-sm mt-0.5 sm:mt-1 truncate">{member.role}</p>
                 </div>
               </motion.div>
             ))}

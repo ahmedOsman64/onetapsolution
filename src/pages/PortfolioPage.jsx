@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 import { ExternalLink, ArrowRight } from 'lucide-react';
 import { getProjects } from '../services/api';
 
-const categories = ['All', 'Web Development', 'Mobile Apps', 'Multimedia', 'Design'];
-
 const PortfolioPage = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [projectsList, setProjectsList] = useState([]);
@@ -28,6 +26,9 @@ const PortfolioPage = () => {
       window.removeEventListener('app-data-updated', handleUpdate);
     };
   }, []);
+
+  const defaultCategories = ['Web', 'Design', 'UI/UX'];
+  const dynamicCategories = ['All', ...new Set([...defaultCategories, ...projectsList.map(p => p.category).filter(Boolean)])];
 
   const filtered = activeCategory === 'All'
     ? projectsList
@@ -71,7 +72,7 @@ const PortfolioPage = () => {
             transition={{ duration: 0.5 }}
             className="flex flex-wrap gap-3 justify-center mb-14"
           >
-            {categories.map((cat) => (
+            {dynamicCategories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
@@ -98,7 +99,7 @@ const PortfolioPage = () => {
           </motion.p>
 
           {/* Projects Grid with AnimatePresence */}
-          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <motion.div layout className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
             <AnimatePresence mode="popLayout">
               {filtered.map((project) => (
                 <motion.div
@@ -128,9 +129,9 @@ const PortfolioPage = () => {
                     </button>
                   </div>
                   {/* Always-visible card footer */}
-                  <div className="p-5 border-t border-slate-100 dark:border-white/5 transition-colors">
-                    <span className="text-[#04C244] text-xs font-semibold uppercase tracking-widest">{project.category}</span>
-                    <h3 className="text-slate-900 dark:text-white font-semibold mt-1 transition-colors">{project.title}</h3>
+                  <div className="p-3 sm:p-5 border-t border-slate-100 dark:border-white/5 transition-colors">
+                    <span className="text-[#04C244] text-[10px] sm:text-xs font-semibold uppercase tracking-widest">{project.category}</span>
+                    <h3 className="text-slate-900 dark:text-white text-sm sm:text-base font-semibold mt-1 transition-colors truncate">{project.title}</h3>
                   </div>
                 </motion.div>
               ))}

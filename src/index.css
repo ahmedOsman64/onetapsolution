@@ -37,6 +37,14 @@
 }
 
 @layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
   .glass-card {
     background-color: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(16px);
@@ -160,7 +168,8 @@ html.light .project-overlay .text-\[\#04C244\] {
 /* Keep text white on green buttons */
 html.light .bg-gradient-brand .text-white,
 html.light a.bg-\[\#04C244\],
-html.light a[class*="bg-\[#04C244\]"] {
+html.light a[class^="bg-\[#04C244\]"],
+html.light a[class*=" bg-\[#04C244\]"] {
   color: #ffffff !important;
 }
 

@@ -6,6 +6,7 @@ import { getProjects } from '../services/api';
 
 const Portfolio = () => {
   const [projectsList, setProjectsList] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -25,9 +26,20 @@ const Portfolio = () => {
       window.removeEventListener('app-data-updated', handleUpdate);
     };
   }, []);
+
+  const handleScroll = (e) => {
+    const container = e.target;
+    const scrollPosition = container.scrollLeft;
+    const cardWidth = container.scrollWidth / projectsList.length;
+    const index = Math.round(scrollPosition / cardWidth);
+    if (index >= 0 && index < projectsList.length) {
+      setActiveIndex(index);
+    }
+  };
+
   return (
-    <section className="py-24 relative">
-      <div className="container mx-auto px-6">
+    <section className="py-12 md:py-24 relative overflow-hidden">
+      <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-16">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
@@ -48,7 +60,8 @@ const Portfolio = () => {
           </motion.p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-8">
+        {/* Desktop Container */}
+        <div className="hidden md:flex flex-wrap justify-center gap-8">
           {projectsList.map((project, index) => (
             <motion.div
               key={index}
@@ -84,6 +97,68 @@ const Portfolio = () => {
               </div>
             </motion.div>
           ))}
+        </div>
+
+        {/* Mobile Swipeable Slider with Card Peeking */}
+        <div className="md:hidden relative w-full overflow-hidden">
+          <div 
+            id="projects-slider"
+            onScroll={handleScroll}
+            className="flex overflow-x-auto snap-x snap-mandatory gap-4 px-[10vw] scrollbar-none py-4 w-full"
+            style={{ scrollBehavior: 'smooth' }}
+          >
+            {projectsList.map((project, index) => (
+              <div
+                key={index}
+                className="snap-center shrink-0 w-[80vw] max-w-[320px] group relative rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border-2 border-[#04C244] shadow-lg shadow-[#04C244]/20 dark:shadow-2xl hover:shadow-[#04C244]/40 transition-all flex flex-col justify-between"
+              >
+                <div className="aspect-video overflow-hidden bg-zinc-900 shrink-0">
+                  <img 
+                    src={project.image || 'https://placehold.co/600x400/1e1e1e/04C244?text=Project+Preview'} 
+                    alt={project.title} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/1e1e1e/04C244?text=Project+Preview'; }}
+                  />
+                </div>
+                <div className="absolute inset-0 bg-linear-to-t from-black via-black/75 to-transparent opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 project-overlay">
+                  <span className="text-[#04C244] text-xs font-medium mb-0.5 text-shadow-sm">
+                    {project.category}
+                  </span>
+                  <h3 className="text-base font-bold text-white mb-3 text-shadow-md">
+                    {project.title}
+                  </h3>
+                  <div className="flex gap-2.5">
+                    <button className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-colors keep-white">
+                      <ExternalLink size={16} />
+                    </button>
+                    <button className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center text-white transition-colors keep-white">
+                      <i className="fab fa-github text-base"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Dots Indicator */}
+          <div className="flex justify-center gap-1.5 mt-4">
+            {projectsList.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  const container = document.getElementById('projects-slider');
+                  if (container) {
+                    const cardWidth = container.scrollWidth / projectsList.length;
+                    container.scrollTo({ left: idx * cardWidth, behavior: 'smooth' });
+                  }
+                }}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  activeIndex === idx ? 'w-6 bg-[#04C244]' : 'w-1.5 bg-slate-600/50'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
         <motion.div 

@@ -22,6 +22,7 @@ const renderIcon = (icon) => {
 
 const Services = () => {
   const [servicesList, setServicesList] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -34,9 +35,19 @@ const Services = () => {
     fetchServices();
     return () => { mounted = false; };
   }, []);
+
+  const handleScroll = (e) => {
+    const container = e.target;
+    const scrollPosition = container.scrollLeft;
+    const cardWidth = container.scrollWidth / servicesList.length;
+    const index = Math.round(scrollPosition / cardWidth);
+    if (index >= 0 && index < servicesList.length) {
+      setActiveIndex(index);
+    }
+  };
   
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section className="py-12 md:py-24 relative overflow-hidden">
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-16">
           <motion.h2 
@@ -58,7 +69,8 @@ const Services = () => {
           </motion.p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-8">
+        {/* Desktop Container */}
+        <div className="hidden md:flex flex-wrap justify-center gap-8">
           {servicesList.map((service, index) => (
             <motion.div
               key={index}
@@ -85,6 +97,61 @@ const Services = () => {
               </Link>
             </motion.div>
           ))}
+        </div>
+
+        {/* Mobile Swipeable Slider with Card Peeking */}
+        <div className="md:hidden relative w-full overflow-hidden">
+          <div 
+            id="services-slider"
+            onScroll={handleScroll}
+            className="flex overflow-x-auto snap-x snap-mandatory gap-4 px-[10vw] scrollbar-none py-4 w-full"
+            style={{ scrollBehavior: 'smooth' }}
+          >
+            {servicesList.map((service, index) => (
+              <div
+                key={index}
+                className="snap-center shrink-0 w-[80vw] max-w-[320px] glass-card p-7 group border border-white/10 hover:border-[#04C244]/50 transition-colors flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-14 h-14 rounded-2xl bg-zinc-900/50 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                    {renderIcon(service.icon)}
+                  </div>
+                  <h3 className="text-lg font-semibold mb-3 text-white group-hover:text-[#04C244] transition-colors">
+                    {service.name || service.title}
+                  </h3>
+                  <p className="text-slate-400 text-sm mb-5 line-clamp-3 leading-relaxed">
+                    {service.desc || service.description}
+                  </p>
+                </div>
+                <Link 
+                  to="/services" 
+                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 group-hover:text-white transition-colors mt-auto"
+                >
+                  Learn More <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          {/* Dots Indicator */}
+          <div className="flex justify-center gap-1.5 mt-4">
+            {servicesList.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  const container = document.getElementById('services-slider');
+                  if (container) {
+                    const cardWidth = container.scrollWidth / servicesList.length;
+                    container.scrollTo({ left: idx * cardWidth, behavior: 'smooth' });
+                  }
+                }}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  activeIndex === idx ? 'w-6 bg-[#04C244]' : 'w-1.5 bg-slate-600/50'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
         <motion.div 

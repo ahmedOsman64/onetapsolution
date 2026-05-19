@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, User, ArrowRight, Newspaper, X } from 'lucide-react';
-import { getNews } from '../services/api';
+import { getNews, subscribeNewsletter } from '../services/api';
 
 const NewsPage = () => {
   const [news, setNews] = useState([]);
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [email, setEmail] = useState('');
+  const [subscribeStatus, setSubscribeStatus] = useState('idle'); // idle, loading, success, error
 
   useEffect(() => {
     let mounted = true;
@@ -154,20 +156,55 @@ const NewsPage = () => {
       </AnimatePresence>
 
       {/* Newsletter Section */}
-      <section className="py-24 bg-white/2 border-y border-white/5 keep-dark-context">
+      <section className="py-24 bg-zinc-950/20 dark:bg-white/2 border-y border-black/5 dark:border-white/5">
         <div className="container mx-auto px-6 text-center">
-          <h3 className="text-3xl font-bold text-white mb-4">Never miss an update</h3>
-          <p className="text-slate-400 mb-10 max-w-xl mx-auto">Subscribe to our newsletter and get the latest news delivered directly to your inbox.</p>
-          <div className="max-w-md mx-auto flex gap-4">
-            <input 
-              type="email" 
-              placeholder="Enter your email" 
-              className="flex-1 bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white focus:outline-none focus:border-[#04C244]/50 transition-all"
-            />
-            <button className="px-8 py-4 bg-[#04C244] text-black font-bold rounded-2xl hover:bg-[#03a837] transition-all shadow-lg shadow-[#04C244]/10">
-              Subscribe
-            </button>
-          </div>
+          <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Never miss an update</h3>
+          <p className="text-slate-600 dark:text-slate-400 mb-10 max-w-xl mx-auto">Subscribe to our newsletter and get the latest news delivered directly to your inbox.</p>
+          
+          {subscribeStatus === 'success' ? (
+            <motion.p 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-sm text-[#04C244] font-medium bg-[#04C244]/10 border border-[#04C244]/20 py-3 px-5 rounded-2xl max-w-md mx-auto"
+            >
+              Successfully subscribed! Thank you for staying in touch.
+            </motion.p>
+          ) : (
+            <form 
+              className="flex flex-col sm:relative sm:flex-row max-w-md mx-auto gap-3 sm:gap-0 bg-transparent sm:bg-zinc-100 sm:dark:bg-white/5 sm:border sm:border-black/10 sm:dark:border-white/10 sm:rounded-full sm:p-1 focus-within:sm:border-[#04C244]/50 focus-within:sm:ring-1 focus-within:sm:ring-[#04C244]/20 transition-all duration-300"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setSubscribeStatus('loading');
+                const res = await subscribeNewsletter(email);
+                if (res.success) {
+                  setSubscribeStatus('success');
+                  setEmail('');
+                  setTimeout(() => setSubscribeStatus('idle'), 5000);
+                } else {
+                  setSubscribeStatus('error');
+                  alert(res.message || "Failed to subscribe");
+                  setSubscribeStatus('idle');
+                }
+              }}
+            >
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={subscribeStatus === 'loading'}
+                className="w-full bg-zinc-100 dark:bg-white/5 sm:bg-transparent border border-black/10 dark:border-white/10 sm:border-0 rounded-2xl sm:rounded-none py-3.5 px-5 sm:pr-36 text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none text-sm focus:border-[#04C244] sm:focus:border-0 transition-colors"
+              />
+              <button 
+                type="submit"
+                disabled={subscribeStatus === 'loading'}
+                className="w-full sm:w-auto sm:absolute sm:right-1 sm:top-1 sm:bottom-1 px-8 py-3.5 sm:py-0 bg-[#04C244] text-black font-bold rounded-2xl sm:rounded-full hover:bg-[#03a837] hover:scale-[1.02] sm:hover:scale-100 transition-all shadow-lg shadow-[#04C244]/10 active:scale-95 text-sm shrink-0 disabled:opacity-50"
+              >
+                {subscribeStatus === 'loading' ? 'Subscribing...' : 'Subscribe'}
+              </button>
+            </form>
+          )}
         </div>
       </section>
     </div>

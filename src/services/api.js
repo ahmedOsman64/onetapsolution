@@ -79,7 +79,7 @@ export async function getStats() {
   } catch (e) {
     console.error('api.js: failed to fetch stats', e);
   }
-  return { projects: 1, clients: 20, services: 7, satisfaction: 99 };
+  return { projects: 1, clients: 20, services: 7, satisfaction: 3 };
 }
 
 export async function getNews() {

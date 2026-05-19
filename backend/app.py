@@ -67,6 +67,22 @@ def create_app(config_name='default'):
     # Auto-create tables (e.g. visits)
     with app.app_context():
         db.create_all()
+        # Add new columns to settings table if they don't exist
+        try:
+            from sqlalchemy import text
+            for col, col_type in [
+                ('projects_done', 'INTEGER NOT NULL DEFAULT 1'),
+                ('trusted_partners', 'INTEGER NOT NULL DEFAULT 20'),
+                ('services_provided', 'INTEGER NOT NULL DEFAULT 7'),
+                ('satisfaction_rate', 'INTEGER NOT NULL DEFAULT 99')
+            ]:
+                try:
+                    db.session.execute(text(f"ALTER TABLE settings ADD COLUMN {col} {col_type}"))
+                    db.session.commit()
+                except Exception:
+                    db.session.rollback()  # Column probably already exists
+        except Exception as e:
+            app.logger.warning(f"Auto-migration warning: {e}")
     
     # Initialize JWT
     jwt = JWTManager(app)
