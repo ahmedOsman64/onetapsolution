@@ -4,7 +4,8 @@
  * This means any change an admin makes is instantly visible to customers.
  */
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api`;
+
 
 export async function getProjects() {
   try {
@@ -99,7 +100,7 @@ export async function getNews() {
  */
 export async function submitContactMessage({ name, email, subject, message }) {
   try {
-    const response = await fetch('http://localhost:5000/api/contact/', {
+    const response = await fetch(`${API_BASE}/contact/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, subject, message })
@@ -117,7 +118,7 @@ export async function submitContactMessage({ name, email, subject, message }) {
  */
 export async function subscribeNewsletter(email) {
   try {
-    const response = await fetch('http://localhost:5000/api/newsletter/', {
+    const response = await fetch(`${API_BASE}/newsletter/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email })

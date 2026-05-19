@@ -22,6 +22,10 @@ uploads/*
 *.sqlite
 *.db
 
+# Logs (may contain sensitive IP/request data)
+*.log
+security.log
+
 # IDEs
 .vscode/
 .idea/
