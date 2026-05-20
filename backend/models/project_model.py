@@ -12,7 +12,7 @@ class Project(db.Model):
     image = db.Column(db.Text, nullable=True)
     github_link = db.Column(db.String(255), nullable=True)
     demo_link = db.Column(db.String(255), nullable=True)
-    technologies = db.Column(db.String(255), nullable=True)
+    technologies = db.Column(db.Text, nullable=True)
     client = db.Column(db.String(100), nullable=True)
     category = db.Column(db.String(100), nullable=True)
     status = db.Column(db.String(50), default='Development')
